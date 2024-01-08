@@ -1,0 +1,24 @@
+version: '3'
+services:
+  server:
+    image: nginx:alpine
+    volumes:
+      - servervol:/usr/share/nginx/html
+    ports:
+      - 8080:80
+    environment:
+      - NGINX_PORT=8080
+    command: /bin/sh -c "echo Vain 979 tavua vajaa > /usr/share/nginx/html/tiedosto.txt && md5sum /usr/share/nginx/html/tiedosto.txt > /usr/share/nginx/html/checksum.txt && exec nginx -g 'daemon off;'"
+
+  client:
+    image: alpine:latest
+    volumes:
+      - clientvol:/clientdata
+    network_mode: host
+    command: /bin/sh -c "wget -O /clientdata/tiedosto.txt 127.0.0.1:8080/tiedosto.txt && wget -O /clientdata/checksum.txt 127.0.0.1:8080/checksum.txt && md5sum -c /clientdata/checksum.txt; tail -F anything"
+    depends_on:
+      - server
+
+volumes:
+  servervol:
+  clientvol:
